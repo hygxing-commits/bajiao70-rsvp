@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>八教校友返校聚会 · 意向统计 | 成都理工大学 70 周年校庆</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700;900&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#1a237e;
+    --navy-dark:#0d1642;
+    --navy-ink:#141c3f;
+    --gold:#bfa15a;
+    --gold-light:#d4b86a;
+    --gold-pale:#ece0c4;
+    --cream:#f8f6f1;
+    --paper:#fffdf9;
+    --ink:#23283d;
+    --muted:#6d7386;
+    --line:#e3ddcd;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html{font-size:16px}
+  body{
+    font-family:'Noto Sans SC',-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;
+    background:var(--cream);
+    color:var(--ink);
+    line-height:1.7;
+    max-width:520px;
+    margin:0 auto;
+    min-height:100vh;
+    box-shadow:0 0 60px rgba(20,28,63,.08);
+  }
+
+  /* ===== 页头 ===== */
+  .hero{
+    background:var(--navy-dark);
+    color:#fff;
+    padding:2.6rem 1.5rem 2.2rem;
+    position:relative;
+    overflow:hidden;
+  }
+  .hero::after{
+    content:'八教';
+    position:absolute;
+    right:-.6rem; bottom:-2.6rem;
+    font-family:'Noto Serif SC',serif;
+    font-weight:900;
+    font-size:9rem;
+    color:rgba(191,161,90,.07);
+    line-height:1;
+    pointer-events:none;
+  }
+  .badge{
+    display:inline-block;
+    border:1px solid var(--gold);
+    color:var(--gold-light);
+    padding:.28rem .9rem;
+    font-size:.72rem;
+    letter-spacing:3px;
+    margin-bottom:1.1rem;
+  }
+  .hero h1{
+    font-family:'Noto Serif SC',serif;
+    font-weight:900;
+    font-size:1.72rem;
+    letter-spacing:2px;
+    line-height:1.4;
+  }
+  .hero .sub{
+    color:var(--gold-light);
+    font-size:.85rem;
+    letter-spacing:5px;
+    margin-top:.4rem;
+    font-weight:300;
+  }
+  .hero .meta{
+    margin-top:1.2rem;
+    font-size:.8rem;
+    color:rgba(255,255,255,.72);
+    border-top:1px solid rgba(191,161,90,.35);
+    padding-top:.8rem;
+    display:flex;
+    justify-content:space-between;
+    letter-spacing:1px;
+  }
+
+  main{padding:0 1.25rem 8.5rem}
+
+  /* ===== 金色小节标 ===== */
+  .sec{margin-top:2.1rem}
+  .mini-title{
+    display:flex;align-items:center;gap:.7rem;
+    color:var(--gold);
+    font-size:.75rem;
+    letter-spacing:.2em;
+    font-weight:700;
+    text-transform:uppercase;
+    margin-bottom:.35rem;
+  }
+  .mini-title::before{content:'';width:38px;height:1px;background:var(--gold)}
+  .mini-title .no{color:var(--muted);font-weight:400;letter-spacing:.1em}
+  .sec-hint{font-size:.78rem;color:var(--muted);margin-bottom:.9rem}
+
+  /* ===== 表单控件 ===== */
+  .field{margin-bottom:1rem}
+  .field label{display:block;font-size:.85rem;font-weight:500;margin-bottom:.35rem}
+  .field label .req{color:#c62828;margin-left:2px}
+  .field label .opt{color:var(--muted);font-weight:400;font-size:.75rem}
+  input[type=text],input[type=tel],input[type=number],textarea{
+    width:100%;
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-radius:2px;
+    padding:.72rem .85rem;
+    font-size:1rem;
+    font-family:inherit;
+    color:var(--ink);
+    outline:none;
+    transition:border-color .2s;
+  }
+  input:focus,textarea:focus{border-color:var(--navy)}
+  textarea{resize:vertical;min-height:70px}
+
+  /* ===== 时段选择（计票条） ===== */
+  .day-block{margin-bottom:1.3rem}
+  .day-head{
+    font-family:'Noto Serif SC',serif;
+    font-weight:700;
+    font-size:1.02rem;
+    display:flex;align-items:baseline;gap:.6rem;
+    padding-bottom:.4rem;
+    border-bottom:1px solid var(--line);
+    margin-bottom:.55rem;
+  }
+  .day-head .d-date{font-size:.75rem;color:var(--muted);font-family:'Noto Sans SC',sans-serif;font-weight:400;letter-spacing:1px}
+  .day-head .d-count{margin-left:auto;font-size:.72rem;color:var(--gold);font-family:'Noto Sans SC',sans-serif;font-weight:500}
+
+  .slot{
+    --fill:0%;
+    position:relative;
+    display:flex;align-items:center;gap:.7rem;
+    width:100%;
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-radius:2px;
+    padding:.72rem .85rem;
+    margin-bottom:.45rem;
+    cursor:pointer;
+    text-align:left;
+    font-family:inherit;
+    overflow:hidden;
+    transition:border-color .2s, background .25s;
+  }
+  .slot::before{
+    content:'';
+    position:absolute;inset:0;
+    width:var(--fill);
+    background:rgba(191,161,90,.16);
+    transition:width .5s cubic-bezier(.22,1,.36,1);
+    pointer-events:none;
+  }
+  .slot .box{
+    position:relative;flex:none;
+    width:20px;height:20px;
+    border:1.5px solid var(--muted);
+    border-radius:2px;
+    transition:all .2s;
+  }
+  .slot .box::after{
+    content:'';
+    position:absolute;left:5px;top:2px;
+    width:6px;height:10px;
+    border:solid var(--navy-dark);
+    border-width:0 2.5px 2.5px 0;
+    transform:rotate(45deg) scale(0);
+    transition:transform .18s cubic-bezier(.34,1.56,.64,1);
+  }
+  .slot.on{border-color:var(--navy);background:#f4f2ff}
+  .slot.on .box{background:var(--gold);border-color:var(--gold)}
+  .slot.on .box::after{transform:rotate(45deg) scale(1)}
+  .slot .s-label{position:relative;flex:1;font-size:.95rem}
+  .slot .s-label small{display:block;font-size:.72rem;color:var(--muted);font-weight:300}
+  .slot .s-count{
+    position:relative;flex:none;
+    font-size:.78rem;color:var(--muted);
+    min-width:3.2em;text-align:right;
+    font-variant-numeric:tabular-nums;
+  }
+  .slot.on .s-count{color:var(--navy);font-weight:700}
+
+  /* ===== 活动偏好小圆片 ===== */
+  .chips{display:flex;flex-wrap:wrap;gap:.5rem}
+  .chip{
+    border:1px solid var(--line);
+    background:var(--paper);
+    border-radius:999px;
+    padding:.42rem 1rem;
+    font-size:.85rem;
+    font-family:inherit;
+    color:var(--ink);
+    cursor:pointer;
+    transition:all .2s;
+  }
+  .chip.on{background:var(--navy);border-color:var(--navy);color:#fff}
+
+  /* ===== 底部提交栏 ===== */
+  .dock{
+    position:fixed;left:0;right:0;bottom:0;
+    background:rgba(13,22,66,.97);
+    backdrop-filter:blur(6px);
+    padding:.8rem 1.25rem calc(.8rem + env(safe-area-inset-bottom));
+    display:flex;align-items:center;gap:1rem;
+    z-index:50;
+  }
+  .dock-inner{max-width:520px;margin:0 auto;display:flex;align-items:center;gap:1rem;width:100%}
+  .dock .picked{color:rgba(255,255,255,.8);font-size:.78rem;line-height:1.4}
+  .dock .picked b{color:var(--gold-light);font-size:1.05rem;font-variant-numeric:tabular-nums}
+  .dock button{
+    margin-left:auto;flex:none;
+    background:var(--gold);
+    color:var(--navy-dark);
+    border:none;
+    font-family:inherit;
+    font-weight:700;
+    font-size:.95rem;
+    letter-spacing:2px;
+    padding:.7rem 1.6rem;
+    border-radius:2px;
+    cursor:pointer;
+    transition:opacity .2s;
+  }
+  .dock button:disabled{opacity:.45;cursor:not-allowed}
+
+  /* ===== 返校凭证 ===== */
+  .ticket-wrap{display:none;padding:2.2rem 1.25rem 8.5rem}
+  .ticket{
+    background:var(--paper);
+    border:1px solid var(--line);
+    position:relative;
+  }
+  .ticket::before,.ticket::after{
+    content:'';position:absolute;width:22px;height:22px;border-radius:50%;
+    background:var(--cream);border:1px solid var(--line);
+    top:63%;
+  }
+  .ticket::before{left:-12px}
+  .ticket::after{right:-12px}
+  .t-top{padding:1.8rem 1.5rem 1.3rem;text-align:center}
+  .t-top .t-badge{font-size:.7rem;letter-spacing:3px;color:var(--gold)}
+  .t-top h2{font-family:'Noto Serif SC',serif;font-weight:900;font-size:1.5rem;letter-spacing:3px;margin:.4rem 0 .2rem}
+  .t-top .t-name{font-family:'Noto Serif SC',serif;font-size:1.15rem;color:var(--navy);font-weight:700}
+  .t-mid{
+    border-top:1.5px dashed var(--line);
+    margin:0 .8rem;
+    padding:1.1rem .7rem .4rem;
+  }
+  .t-mid .t-row{display:flex;justify-content:space-between;font-size:.85rem;padding:.28rem 0}
+  .t-mid .t-row span:first-child{color:var(--muted)}
+  .t-slots{padding:.4rem .7rem 1.4rem}
+  .t-slot-item{
+    font-size:.82rem;padding:.3rem 0;border-bottom:1px dotted var(--line);
+    display:flex;justify-content:space-between;
+  }
+  .t-slot-item:last-child{border-bottom:none}
+  .t-slot-item i{font-style:normal;color:var(--gold);font-size:.72rem}
+  .t-actions{display:flex;gap:.7rem;margin-top:1.4rem}
+  .t-actions button{
+    flex:1;padding:.75rem;font-family:inherit;font-size:.9rem;cursor:pointer;border-radius:2px;letter-spacing:1px;
+  }
+  .t-actions .again{background:none;border:1px solid var(--navy);color:var(--navy)}
+  .t-actions .toStats{background:var(--navy);border:1px solid var(--navy);color:#fff}
+  .toast{
+    position:fixed;left:50%;bottom:6.5rem;transform:translateX(-50%);
+    background:var(--navy-dark);color:#fff;font-size:.82rem;
+    padding:.55rem 1.2rem;border-radius:999px;
+    opacity:0;pointer-events:none;transition:opacity .3s;z-index:99;white-space:nowrap;
+  }
+  .toast.show{opacity:1}
+
+  /* ===== 统计区 ===== */
+  .stats-summary{
+    display:flex;border:1px solid var(--line);background:var(--paper);margin-bottom:1.2rem;
+  }
+  .stats-summary>div{flex:1;text-align:center;padding:.9rem .3rem}
+  .stats-summary>div+div{border-left:1px solid var(--line)}
+  .stats-summary b{
+    display:block;font-family:'Noto Serif SC',serif;font-size:1.5rem;color:var(--navy);
+    font-variant-numeric:tabular-nums;line-height:1.2;
+  }
+  .stats-summary span{font-size:.7rem;color:var(--muted);letter-spacing:1px}
+  .stat-row{margin-bottom:.35rem}
+  .stat-row .sr-head{display:flex;justify-content:space-between;font-size:.82rem;padding:.3rem 0}
+  .stat-row .sr-head b{color:var(--navy);font-variant-numeric:tabular-nums}
+  .stat-row .sr-bar{height:7px;background:#ede8db;position:relative;overflow:hidden}
+  .stat-row .sr-bar i{
+    position:absolute;left:0;top:0;bottom:0;
+    background:linear-gradient(90deg,var(--navy) 0%,var(--navy) 100%);
+    width:0;transition:width .6s cubic-bezier(.22,1,.36,1);
+  }
+  .stat-row.hot .sr-bar i{background:var(--gold)}
+  .sr-names{font-size:.75rem;color:var(--muted);padding:.25rem 0 .4rem;line-height:1.9}
+  .day-stat{margin-bottom:1.1rem}
+  .day-stat h4{
+    font-size:.8rem;color:var(--gold);letter-spacing:2px;margin-bottom:.3rem;
+    border-bottom:1px solid var(--line);padding-bottom:.3rem;
+  }
+  .org-tools{display:flex;gap:.6rem;margin-top:1.4rem;flex-wrap:wrap}
+  .org-tools button{
+    flex:1;min-width:45%;
+    background:none;border:1px solid var(--navy);color:var(--navy);
+    padding:.65rem;font-family:inherit;font-size:.82rem;letter-spacing:1px;border-radius:2px;cursor:pointer;
+  }
+  .empty-note{color:var(--muted);font-size:.85rem;text-align:center;padding:1.5rem 0;border:1px dashed var(--line)}
+
+  footer{
+    text-align:center;color:var(--muted);font-size:.72rem;letter-spacing:2px;
+    padding:2.2rem 1rem 1rem;line-height:2;
+  }
+  footer .gold{color:var(--gold)}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <span class="badge">TEAM STRONG · 2007</span>
+  <h1>八教校友返校聚会<br>意向统计</h1>
+  <div class="sub">成都理工大学 70 周年校庆</div>
+  <div class="meta">
+    <span>机械创新实验室（八教团队）</span>
+    <span>周五晚 — 周日晚</span>
+  </div>
+</header>
+
+<main id="formView">
+  <!-- 01 基本信息 -->
+  <section class="sec">
+    <div class="mini-title"><span class="no">01</span>你是谁</div>
+    <div class="sec-hint">方便相认，也方便统计与后续安排</div>
+    <div class="field">
+      <label>姓名<span class="req">*</span></label>
+      <input type="text" id="fName" placeholder="你的大名" autocomplete="name">
+    </div>
+    <div class="field">
+      <label>届别 / 入学年份 <span class="opt">选填，如 2015</span></label>
+      <input type="number" id="fYear" placeholder="哪一年进的八教" inputmode="numeric" min="2000" max="2030">
+    </div>
+    <div class="field">
+      <label>联系方式 <span class="opt">选填，微信号或手机号</span></label>
+      <input type="text" id="fContact" placeholder="方便组织者拉群联系">
+    </div>
+  </section>
+
+  <!-- 02 返校时间 -->
+  <section class="sec">
+    <div class="mini-title"><span class="no">02</span>返校时间</div>
+    <div class="sec-hint">能参加的时间段<b>都选上</b>，每个时段右侧数字是已选人数，方便大家约到一块儿</div>
+    <div id="slotGroups"></div>
+  </section>
+
+  <!-- 03 下午活动偏好 -->
+  <section class="sec">
+    <div class="mini-title"><span class="no">03</span>下午想玩什么</div>
+    <div class="sec-hint">选了下午时段的校友可以多选，组织者好提前订场地</div>
+    <div class="chips" id="actChips"></div>
+  </section>
+
+  <!-- 04 备注 -->
+  <section class="sec">
+    <div class="mini-title"><span class="no">04</span>还想说点什么</div>
+    <div class="sec-hint">选填：同行人数、想见的老师同学、其他建议</div>
+    <textarea id="fNote" placeholder="随便写……"></textarea>
+  </section>
+
+  <!-- 统计 -->
+  <section class="sec" id="statsSec">
+    <div class="mini-title"><span class="no">★</span>实时统计</div>
+    <div class="sec-hint">数据存于本机浏览器，组织者可用下方按钮导出汇总</div>
+    <div class="stats-summary">
+      <div><b id="stTotal">0</b><span>已报名</span></div>
+      <div><b id="stSat">0</b><span>周六可到</span></div>
+      <div><b id="stSun">0</b><span>周日可到</span></div>
+    </div>
+    <div id="statList"></div>
+    <div class="org-tools">
+      <button id="btnCopy" type="button">复制汇总（发群里）</button>
+      <button id="btnCsv" type="button">导出 CSV 明细</button>
+    </div>
+  </section>
+
+  <footer>
+    <div class="gold">◆ ◆ ◆</div>
+    八教机械创新实验室 · 校友返校聚会筹备<br>
+    本页面为意向摸底，具体安排以群通知为准
+  </footer>
+</main>
+
+<!-- 返校凭证 -->
+<div class="ticket-wrap" id="ticketView">
+  <div class="ticket">
+    <div class="t-top">
+      <div class="t-badge">ADMIT ONE · 返校凭证</div>
+      <h2>报名成功</h2>
+      <div class="t-name" id="tName"></div>
+    </div>
+    <div class="t-mid">
+      <div class="t-row"><span>编号</span><span id="tNo"></span></div>
+      <div class="t-row"><span>届别</span><span id="tYear"></span></div>
+      <div class="t-row"><span>已选时段</span><span id="tCount"></span></div>
+    </div>
+    <div class="t-slots" id="tSlots"></div>
+  </div>
+  <div class="t-actions">
+    <button class="again" id="btnEdit" type="button">修改我的选择</button>
+    <button class="toStats" id="btnStats" type="button">看看大家怎么选</button>
+  </div>
+</div>
+
+<!-- 底部提交栏 -->
+<div class="dock" id="dock">
+  <div class="dock-inner">
+    <div class="picked">已选时段<br><b id="pickCount">0</b> 个</div>
+    <button id="btnSubmit" type="button" disabled>提交报名</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============ 可配置项（组织者改这里） ============ */
+const CONFIG = {
+  dates: { fri:'周五', sat:'周六', sun:'周日' },   // 确定日期后可改为 '10月16日 · 周五'
+  storeKey: 'bajiao70_rsvp_v1'
+};
+
+const DAYS = [
+  { key:'fri', name:'周五', slots:[
+    { id:'fri-dinner', label:'晚饭', hint:'到校集合，先吃一顿' },
+    { id:'fri-night',  label:'夜宵', hint:'聊到兴起，烧烤走起' },
+  ]},
+  { key:'sat', name:'周六', slots:[
+    { id:'sat-morning',   label:'上午 · 逛校园 / 八教实验室', hint:'重走砚湖，回实验室看看' },
+    { id:'sat-lunch',     label:'中午 · 聚餐', hint:'食堂还是老馆子，群里再议' },
+    { id:'sat-afternoon', label:'下午 · 打球 / 棋牌 / 喝茶', hint:'运动、娱乐、叙旧三不误' },
+    { id:'sat-dinner',    label:'晚上 · 晚饭', hint:'正餐团聚' },
+    { id:'sat-night',     label:'夜宵', hint:'不醉不归（量力而行）' },
+  ]},
+  { key:'sun', name:'周日', slots:[
+    { id:'sun-morning',   label:'上午 · 逛校园 / 八教实验室', hint:'错过周六场的补课' },
+    { id:'sun-lunch',     label:'中午 · 聚餐', hint:'散伙饭也要隆重' },
+    { id:'sun-afternoon', label:'下午 · 打球 / 棋牌 / 喝茶', hint:'返程前再聚一轮' },
+    { id:'sun-dinner',    label:'晚上 · 晚饭', hint:'送别宴' },
+    { id:'sun-night',     label:'夜宵', hint:'下次再见，经常见' },
+  ]},
+];
+const ACTIVITIES = ['打球运动','棋牌娱乐','喝茶聊天','都可以'];
+
+const SLOT_MAP = {};
+DAYS.forEach(d => d.slots.forEach(s => SLOT_MAP[s.id] = { ...s, day:d.key, dayName:d.name }));
+
+/* ============ 数据层 ============ */
+function loadSubs(){
+  try { return JSON.parse(localStorage.getItem(CONFIG.storeKey)) || []; }
+  catch(e){ return []; }
+}
+function saveSubs(list){ localStorage.setItem(CONFIG.storeKey, JSON.stringify(list)); }
+function slotCounts(){
+  const c = {}; Object.keys(SLOT_MAP).forEach(k => c[k] = 0);
+  loadSubs().forEach(sub => (sub.slots||[]).forEach(id => { if(id in c) c[id]++; }));
+  return c;
+}
+
+/* ============ 表单状态 ============ */
+const state = { slots:new Set(), acts:new Set() };
+
+/* ============ 渲染：时段分组 ============ */
+const slotGroups = document.getElementById('slotGroups');
+DAYS.forEach(day => {
+  const blk = document.createElement('div');
+  blk.className = 'day-block';
+  blk.innerHTML = `<div class="day-head">${CONFIG.dates[day.key] || day.name}
+      <span class="d-date">${day.key==='fri'?'晚间两场':'全天五场'}</span>
+      <span class="d-count" data-daycount="${day.key}"></span></div>`;
+  day.slots.forEach(s => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'slot';
+    btn.dataset.slot = s.id;
+    btn.innerHTML = `<span class="box"></span>
+      <span class="s-label">${s.label}<small>${s.hint}</small></span>
+      <span class="s-count" data-count="${s.id}">0 人</span>`;
+    btn.addEventListener('click', () => {
+      if(state.slots.has(s.id)) state.slots.delete(s.id); else state.slots.add(s.id);
+      btn.classList.toggle('on');
+      refreshDock();
+    });
+    blk.appendChild(btn);
+  });
+  slotGroups.appendChild(blk);
+});
+
+/* ============ 渲染：活动偏好 ============ */
+const actChips = document.getElementById('actChips');
+ACTIVITIES.forEach(a => {
+  const c = document.createElement('button');
+  c.type = 'button'; c.className = 'chip'; c.textContent = a;
+  c.addEventListener('click', () => {
+    if(state.acts.has(a)) state.acts.delete(a); else state.acts.add(a);
+    c.classList.toggle('on');
+  });
+  actChips.appendChild(c);
+});
+
+/* ============ 底部提交栏 ============ */
+const pickCount = document.getElementById('pickCount');
+const btnSubmit = document.getElementById('btnSubmit');
+const fName = document.getElementById('fName');
+function refreshDock(){
+  pickCount.textContent = state.slots.size;
+  btnSubmit.disabled = !(fName.value.trim() && state.slots.size > 0);
+}
+fName.addEventListener('input', refreshDock);
+
+/* ============ 提交 / 凭证 ============ */
+const formView = document.getElementById('formView');
+const ticketView = document.getElementById('ticketView');
+const dock = document.getElementById('dock');
+
+btnSubmit.addEventListener('click', () => {
+  const name = fName.value.trim();
+  if(!name || state.slots.size === 0) return;
+  const subs = loadSubs();
+  const rec = {
+    name,
+    year: document.getElementById('fYear').value.trim(),
+    contact: document.getElementById('fContact').value.trim(),
+    slots: [...state.slots],
+    activities: [...state.acts],
+    note: document.getElementById('fNote').value.trim(),
+    ts: Date.now()
+  };
+  const idx = subs.findIndex(s => s.name === name);
+  if(idx >= 0) subs[idx] = rec; else subs.push(rec);
+  saveSubs(subs);
+  showTicket(rec, (idx >= 0 ? idx : subs.length - 1) + 1);
+  renderStats();
+});
+
+function showTicket(rec, no){
+  document.getElementById('tName').textContent = rec.name + ' 校友';
+  document.getElementById('tNo').textContent = 'BJ70-' + String(no).padStart(3,'0');
+  document.getElementById('tYear').textContent = rec.year ? rec.year + ' 级' : '未填';
+  document.getElementById('tCount').textContent = rec.slots.length + ' 个';
+  document.getElementById('tSlots').innerHTML = rec.slots
+    .sort((a,b) => Object.keys(SLOT_MAP).indexOf(a) - Object.keys(SLOT_MAP).indexOf(b))
+    .map(id => `<div class="t-slot-item"><span>${SLOT_MAP[id].dayName} ${SLOT_MAP[id].label}</span><i>已登记</i></div>`)
+    .join('');
+  formView.style.display = 'none';
+  ticketView.style.display = 'block';
+  dock.style.display = 'none';
+  window.scrollTo(0,0);
+}
+document.getElementById('btnEdit').addEventListener('click', () => {
+  ticketView.style.display = 'none';
+  formView.style.display = 'block';
+  dock.style.display = 'block';
+});
+document.getElementById('btnStats').addEventListener('click', () => {
+  ticketView.style.display = 'none';
+  formView.style.display = 'block';
+  dock.style.display = 'block';
+  document.getElementById('statsSec').scrollIntoView({behavior:'smooth'});
+});
+
+/* ============ 实时统计 ============ */
+function renderStats(){
+  const subs = loadSubs();
+  const counts = slotCounts();
+  const total = subs.length;
+  document.getElementById('stTotal').textContent = total;
+  document.getElementById('stSat').textContent = subs.filter(s => (s.slots||[]).some(id => SLOT_MAP[id].day === 'sat')).length;
+  document.getElementById('stSun').textContent = subs.filter(s => (s.slots||[]).some(id => SLOT_MAP[id].day === 'sun')).length;
+
+  // 更新每个时段按钮上的计数
+  Object.entries(counts).forEach(([id, n]) => {
+    document.querySelectorAll(`[data-count="${id}"]`).forEach(el => {
+      el.textContent = n + ' 人';
+      const slotEl = el.closest('.slot');
+      if(slotEl) slotEl.style.setProperty('--fill', (total ? (n/total*100) : 0) + '%');
+    });
+  });
+  DAYS.forEach(d => {
+    const dayTotal = d.slots.reduce((sum, s) => sum + counts[s.id], 0);
+    const el = document.querySelector(`[data-daycount="${d.key}"]`);
+    if(el) el.textContent = dayTotal ? `共 ${dayTotal} 人次` : '';
+  });
+
+  // 统计明细
+  const list = document.getElementById('statList');
+  if(total === 0){
+    list.innerHTML = '<div class="empty-note">还没有人报名，等你第一个上墙</div>';
+    return;
+  }
+  const maxN = Math.max(...Object.values(counts), 1);
+  let html = '';
+  DAYS.forEach(d => {
+    html += `<div class="day-stat"><h4>${d.name}</h4>`;
+    d.slots.forEach(s => {
+      const n = counts[s.id];
+      const pct = total ? Math.round(n/total*100) : 0;
+      const names = subs.filter(sub => (sub.slots||[]).includes(s.id))
+        .map(sub => sub.name + (sub.year ? `(${sub.year})` : '')).join('、');
+      html += `<div class="stat-row ${n === maxN && n > 0 ? 'hot' : ''}">
+        <div class="sr-head"><span>${s.label}</span><b>${n} 人 · ${pct}%</b></div>
+        <div class="sr-bar"><i style="width:${total ? n/total*100 : 0}%"></i></div>
+        ${names ? `<div class="sr-names">${names}</div>` : ''}
+      </div>`;
+    });
+    html += '</div>';
+  });
+  list.innerHTML = html;
+}
+
+/* ============ 组织者工具 ============ */
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+function summaryText(){
+  const subs = loadSubs();
+  const counts = slotCounts();
+  const total = subs.length;
+  let out = `【八教校友返校聚会 · 意向统计】共 ${total} 人报名\n`;
+  DAYS.forEach(d => {
+    out += `\n${d.name}：\n`;
+    d.slots.forEach(s => {
+      const names = subs.filter(sub => (sub.slots||[]).includes(s.id)).map(sub => sub.name).join('、');
+      out += `  ${s.label}：${counts[s.id]} 人${names ? '（' + names + '）' : ''}\n`;
+    });
+  });
+  return out;
+}
+document.getElementById('btnCopy').addEventListener('click', async () => {
+  try { await navigator.clipboard.writeText(summaryText()); toast('汇总已复制，去群里粘贴吧'); }
+  catch(e){ toast('复制失败，请长按手动选择复制'); }
+});
+document.getElementById('btnCsv').addEventListener('click', () => {
+  const subs = loadSubs();
+  if(!subs.length){ toast('还没有数据可导出'); return; }
+  const head = ['姓名','届别','联系方式','返校时段','下午活动偏好','备注','提交时间'];
+  const rows = subs.map(s => [
+    s.name, s.year, s.contact,
+    (s.slots||[]).map(id => SLOT_MAP[id].dayName + SLOT_MAP[id].label).join('；'),
+    (s.activities||[]).join('；'),
+    (s.note||'').replace(/[\r\n]+/g,' '),
+    new Date(s.ts).toLocaleString('zh-CN')
+  ]);
+  const csv = '﻿' + [head, ...rows].map(r => r.map(v => `"${String(v ?? '').replace(/"/g,'""')}"`).join(',')).join('\r\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv;charset=utf-8'}));
+  a.download = '八教校友返校统计.csv';
+  a.click();
+  URL.revokeObjectURL(a.href);
+  toast('CSV 已下载');
+});
+
+/* ============ 回填本机已提交的记录 ============ */
+(function restore(){
+  const subs = loadSubs();
+  if(!subs.length) { renderStats(); return; }
+  const last = subs[subs.length - 1];
+  fName.value = last.name || '';
+  document.getElementById('fYear').value = last.year || '';
+  document.getElementById('fContact').value = last.contact || '';
+  document.getElementById('fNote').value = last.note || '';
+  (last.slots||[]).forEach(id => {
+    state.slots.add(id);
+    const el = document.querySelector(`[data-slot="${id}"]`);
+    if(el) el.classList.add('on');
+  });
+  (last.activities||[]).forEach(a => {
+    state.acts.add(a);
+    [...actChips.children].forEach(c => { if(c.textContent === a) c.classList.add('on'); });
+  });
+  refreshDock();
+  renderStats();
+})();
+</script>
+</body>
+</html>
