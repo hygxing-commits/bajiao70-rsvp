@@ -313,6 +313,9 @@
     padding:.65rem;font-family:inherit;font-size:.82rem;letter-spacing:1px;border-radius:2px;cursor:pointer;
   }
   .empty-note{color:var(--muted);font-size:.85rem;text-align:center;padding:1.5rem 0;border:1px dashed var(--line)}
+  .dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;vertical-align:1px}
+  .dot.on{background:#2e7d32;box-shadow:0 0 6px rgba(46,125,50,.55)}
+  .dot.off{background:#c62828}
 
   footer{
     text-align:center;color:var(--muted);font-size:.72rem;letter-spacing:2px;
@@ -376,7 +379,7 @@
   <!-- 统计 -->
   <section class="sec" id="statsSec">
     <div class="mini-title"><span class="no">★</span>实时统计</div>
-    <div class="sec-hint">数据存于本机浏览器，组织者可用下方按钮导出汇总</div>
+    <div class="sec-hint" id="syncHint">本地模式：统计仅汇总本机提交</div>
     <div class="stats-summary">
       <div><b id="stTotal">0</b><span>已报名</span></div>
       <div><b id="stSat">0</b><span>周六可到</span></div>
@@ -431,7 +434,15 @@
 /* ============ 可配置项（组织者改这里） ============ */
 const CONFIG = {
   dates: { fri:'周五', sat:'周六', sun:'周日' },   // 确定日期后可改为 '10月16日 · 周五'
-  storeKey: 'bajiao70_rsvp_v1'
+  storeKey: 'bajiao70_rsvp_v1',
+  /* 云端存储（Supabase 免费版）：填入 Project URL 和 anon public key 后，
+     所有校友的提交自动汇总，统计全员可见。留空则为本机模式。 */
+  cloud: {
+    url: '',        // 形如 https://xxxx.supabase.co
+    key: '',        // anon public key（可公开，专为浏览器设计）
+    table: 'rsvp'
+  },
+  pollMs: 20000     // 云端统计自动刷新间隔（毫秒）
 };
 
 const DAYS = [
@@ -465,10 +476,85 @@ function loadSubs(){
   catch(e){ return []; }
 }
 function saveSubs(list){ localStorage.setItem(CONFIG.storeKey, JSON.stringify(list)); }
-function slotCounts(){
+function slotCounts(list){
   const c = {}; Object.keys(SLOT_MAP).forEach(k => c[k] = 0);
-  loadSubs().forEach(sub => (sub.slots||[]).forEach(id => { if(id in c) c[id]++; }));
+  list.forEach(sub => (sub.slots||[]).forEach(id => { if(id in c) c[id]++; }));
   return c;
+}
+
+/* ---- 云端同步（Supabase PostgREST） ---- */
+let cloudSubs = null;   // 已成功拉取的云端数据；null 表示尚未加载
+let cloudLive = false;  // 最近一次云端拉取是否成功
+
+function cloudEnabled(){ return !!(CONFIG.cloud.url && CONFIG.cloud.key); }
+function cloudHeaders(){
+  return { apikey: CONFIG.cloud.key, Authorization: 'Bearer ' + CONFIG.cloud.key };
+}
+function cloudUrl(extra){
+  return CONFIG.cloud.url.replace(/\/+$/,'') + '/rest/v1/' + CONFIG.cloud.table + (extra || '');
+}
+function allSubs(){
+  if(cloudEnabled()){
+    if(cloudSubs) return cloudSubs;
+    try { return JSON.parse(localStorage.getItem(CONFIG.storeKey + '_cloudCache')) || loadSubs(); }
+    catch(e){ return loadSubs(); }
+  }
+  return loadSubs();
+}
+async function cloudPull(){
+  const r = await fetch(cloudUrl('?select=name,year,contact,slots,activities,note,created_at&order=created_at.asc&limit=1000'), { headers: cloudHeaders() });
+  if(!r.ok) throw new Error('pull:' + r.status);
+  const rows = await r.json();
+  const byName = new Map();           // 同名只保留最新一条
+  rows.forEach(row => byName.set(row.name, row));
+  cloudSubs = [...byName.values()].map(row => ({
+    name: row.name,
+    year: row.year || '',
+    contact: row.contact || '',
+    slots: row.slots || [],
+    activities: row.activities || [],
+    note: row.note || '',
+    ts: row.created_at ? new Date(row.created_at).getTime() : Date.now()
+  }));
+  cloudLive = true;
+  localStorage.setItem(CONFIG.storeKey + '_cloudCache', JSON.stringify(cloudSubs));
+}
+async function cloudPush(rec){
+  const r = await fetch(cloudUrl(''), {
+    method: 'POST',
+    headers: { ...cloudHeaders(), 'Content-Type': 'application/json', Prefer: 'return=minimal' },
+    body: JSON.stringify({ name: rec.name, year: rec.year, contact: rec.contact, slots: rec.slots, activities: rec.activities, note: rec.note })
+  });
+  if(!r.ok) throw new Error('push:' + r.status);
+}
+/* 提交失败时进入待同步队列，下次打开/网络恢复后自动补传 */
+function queuePending(rec){
+  const q = JSON.parse(localStorage.getItem(CONFIG.storeKey + '_pending') || '[]');
+  q.push(rec);
+  localStorage.setItem(CONFIG.storeKey + '_pending', JSON.stringify(q));
+}
+function pendingQueue(){
+  try { return JSON.parse(localStorage.getItem(CONFIG.storeKey + '_pending')) || []; }
+  catch(e){ return []; }
+}
+async function flushPending(){
+  const q = pendingQueue();
+  if(!q.length) return;
+  const remain = [];
+  for(const rec of q){
+    try { await cloudPush(rec); } catch(e){ remain.push(rec); }
+  }
+  localStorage.setItem(CONFIG.storeKey + '_pending', JSON.stringify(remain));
+}
+async function cloudSync(){
+  if(!cloudEnabled()) return;
+  try {
+    await flushPending();
+    await cloudPull();
+  } catch(e){
+    cloudLive = false;
+  }
+  renderStats();
 }
 
 /* ============ 表单状态 ============ */
@@ -527,9 +613,11 @@ const formView = document.getElementById('formView');
 const ticketView = document.getElementById('ticketView');
 const dock = document.getElementById('dock');
 
-btnSubmit.addEventListener('click', () => {
+btnSubmit.addEventListener('click', async () => {
   const name = fName.value.trim();
   if(!name || state.slots.size === 0) return;
+  btnSubmit.disabled = true;
+  btnSubmit.textContent = '提交中…';
   const subs = loadSubs();
   const rec = {
     name,
@@ -543,8 +631,19 @@ btnSubmit.addEventListener('click', () => {
   const idx = subs.findIndex(s => s.name === name);
   if(idx >= 0) subs[idx] = rec; else subs.push(rec);
   saveSubs(subs);
+  if(cloudEnabled()){
+    try {
+      await cloudPush(rec);
+      toast('已同步到云端');
+    } catch(e) {
+      queuePending(rec);
+      toast('网络不佳，已存本机，稍后将自动补传');
+    }
+  }
   showTicket(rec, (idx >= 0 ? idx : subs.length - 1) + 1);
-  renderStats();
+  btnSubmit.textContent = '提交报名';
+  refreshDock();
+  cloudSync();
 });
 
 function showTicket(rec, no){
@@ -574,10 +673,25 @@ document.getElementById('btnStats').addEventListener('click', () => {
 });
 
 /* ============ 实时统计 ============ */
+function updateSyncHint(total){
+  const el = document.getElementById('syncHint');
+  if(!el) return;
+  if(!cloudEnabled()){
+    el.innerHTML = '本地模式：统计仅汇总本机提交';
+    return;
+  }
+  if(cloudLive){
+    const t = new Date().toTimeString().slice(0,5);
+    el.innerHTML = `<span class="dot on"></span>云端实时统计 · 全员已报 ${total} 人 · ${t} 更新，每 ${CONFIG.pollMs/1000} 秒自动刷新`;
+  } else {
+    el.innerHTML = '<span class="dot off"></span>云端连接失败，显示最近一次同步的数据';
+  }
+}
 function renderStats(){
-  const subs = loadSubs();
-  const counts = slotCounts();
+  const subs = allSubs();
+  const counts = slotCounts(subs);
   const total = subs.length;
+  updateSyncHint(total);
   document.getElementById('stTotal').textContent = total;
   document.getElementById('stSat').textContent = subs.filter(s => (s.slots||[]).some(id => SLOT_MAP[id].day === 'sat')).length;
   document.getElementById('stSun').textContent = subs.filter(s => (s.slots||[]).some(id => SLOT_MAP[id].day === 'sun')).length;
@@ -629,8 +743,8 @@ function toast(msg){
   setTimeout(() => t.classList.remove('show'), 2200);
 }
 function summaryText(){
-  const subs = loadSubs();
-  const counts = slotCounts();
+  const subs = allSubs();
+  const counts = slotCounts(subs);
   const total = subs.length;
   let out = `【八教校友返校聚会 · 意向统计】共 ${total} 人报名\n`;
   DAYS.forEach(d => {
@@ -647,7 +761,7 @@ document.getElementById('btnCopy').addEventListener('click', async () => {
   catch(e){ toast('复制失败，请长按手动选择复制'); }
 });
 document.getElementById('btnCsv').addEventListener('click', () => {
-  const subs = loadSubs();
+  const subs = allSubs();
   if(!subs.length){ toast('还没有数据可导出'); return; }
   const head = ['姓名','届别','联系方式','返校时段','下午活动偏好','备注','提交时间'];
   const rows = subs.map(s => [
@@ -687,6 +801,15 @@ document.getElementById('btnCsv').addEventListener('click', () => {
   refreshDock();
   renderStats();
 })();
+
+/* ============ 云端启动：补传待同步 + 拉取全员数据 + 定时刷新 ============ */
+if(cloudEnabled()){
+  cloudSync();
+  setInterval(cloudSync, CONFIG.pollMs);
+  document.addEventListener('visibilitychange', () => {
+    if(!document.hidden) cloudSync();
+  });
+}
 </script>
 </body>
 </html>
