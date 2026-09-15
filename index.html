@@ -306,12 +306,6 @@
     font-size:.8rem;color:var(--gold);letter-spacing:2px;margin-bottom:.3rem;
     border-bottom:1px solid var(--line);padding-bottom:.3rem;
   }
-  .org-tools{display:flex;gap:.6rem;margin-top:1.4rem;flex-wrap:wrap}
-  .org-tools button{
-    flex:1;min-width:45%;
-    background:none;border:1px solid var(--navy);color:var(--navy);
-    padding:.65rem;font-family:inherit;font-size:.82rem;letter-spacing:1px;border-radius:2px;cursor:pointer;
-  }
   .empty-note{color:var(--muted);font-size:.85rem;text-align:center;padding:1.5rem 0;border:1px dashed var(--line)}
   .dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;vertical-align:1px}
   .dot.on{background:#2e7d32;box-shadow:0 0 6px rgba(46,125,50,.55)}
@@ -332,7 +326,7 @@
   <div class="sub">成都理工大学 70 周年校庆</div>
   <div class="meta">
     <span>机械创新实验室（八教团队）</span>
-    <span>周五晚 — 周日晚</span>
+    <span>2026.9.18 周五晚 — 9.20 周日晚</span>
   </div>
 </header>
 
@@ -386,10 +380,6 @@
       <div><b id="stSun">0</b><span>周日可到</span></div>
     </div>
     <div id="statList"></div>
-    <div class="org-tools">
-      <button id="btnCopy" type="button">复制汇总（发群里）</button>
-      <button id="btnCsv" type="button">导出 CSV 明细</button>
-    </div>
   </section>
 
   <footer>
@@ -433,7 +423,7 @@
 <script>
 /* ============ 可配置项（组织者改这里） ============ */
 const CONFIG = {
-  dates: { fri:'周五', sat:'周六', sun:'周日' },   // 确定日期后可改为 '10月16日 · 周五'
+  dates: { fri:'9月18日 · 周五', sat:'9月19日 · 周六', sun:'9月20日 · 周日' },   // 2026 年校庆返校日
   storeKey: 'bajiao70_rsvp_v1',
   /* 云端存储（Supabase 免费版）：填入 Project URL 和 anon public key 后，
      所有校友的提交自动汇总，统计全员可见。留空则为本机模式。 */
@@ -742,43 +732,6 @@ function toast(msg){
   t.textContent = msg; t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 2200);
 }
-function summaryText(){
-  const subs = allSubs();
-  const counts = slotCounts(subs);
-  const total = subs.length;
-  let out = `【八教校友返校聚会 · 意向统计】共 ${total} 人报名\n`;
-  DAYS.forEach(d => {
-    out += `\n${d.name}：\n`;
-    d.slots.forEach(s => {
-      const names = subs.filter(sub => (sub.slots||[]).includes(s.id)).map(sub => sub.name).join('、');
-      out += `  ${s.label}：${counts[s.id]} 人${names ? '（' + names + '）' : ''}\n`;
-    });
-  });
-  return out;
-}
-document.getElementById('btnCopy').addEventListener('click', async () => {
-  try { await navigator.clipboard.writeText(summaryText()); toast('汇总已复制，去群里粘贴吧'); }
-  catch(e){ toast('复制失败，请长按手动选择复制'); }
-});
-document.getElementById('btnCsv').addEventListener('click', () => {
-  const subs = allSubs();
-  if(!subs.length){ toast('还没有数据可导出'); return; }
-  const head = ['姓名','届别','联系方式','返校时段','下午活动偏好','备注','提交时间'];
-  const rows = subs.map(s => [
-    s.name, s.year, s.contact,
-    (s.slots||[]).map(id => SLOT_MAP[id].dayName + SLOT_MAP[id].label).join('；'),
-    (s.activities||[]).join('；'),
-    (s.note||'').replace(/[\r\n]+/g,' '),
-    new Date(s.ts).toLocaleString('zh-CN')
-  ]);
-  const csv = '﻿' + [head, ...rows].map(r => r.map(v => `"${String(v ?? '').replace(/"/g,'""')}"`).join(',')).join('\r\n');
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv;charset=utf-8'}));
-  a.download = '八教校友返校统计.csv';
-  a.click();
-  URL.revokeObjectURL(a.href);
-  toast('CSV 已下载');
-});
 
 /* ============ 回填本机已提交的记录 ============ */
 (function restore(){
